@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+	<head>
+	    <meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<!-- 新 Bootstrap 核心 CSS 文件 -->
+		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap.min.css">
+		<!-- 可选的Bootstrap主题文件（一般不用引入） -->
+		<link rel="stylesheet" href="http://cdn.bootcss.com/bootstrap/3.3.0/css/bootstrap-theme.min.css">
+		<!-- jQuery文件。务必在bootstrap.min.js 之前引入 -->
+		<script src="http://cdn.bootcss.com/jquery/1.11.1/jquery.min.js"></script>
+		<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+		<script src="http://cdn.bootcss.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+		<title>Index.html</title>
+	</head>
+	<body>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="row">
+					<div class="col-md-4"></div>
+					<div class="col-md-4">
+						<br>
+						<div class="col-md-3"><h4>状态：</h4></div>
+						<div class="col-md-2"><h4 id="status">离线</h4></div>
+						<div class="col-md-3"><h4>    </h4></div>
+						<div class="col-md-2"><button class="btn btn-info" onclick="status(1)">退出</button></div>
+						<div class="col-md-2"><button class="btn btn-info" onclick="status(2)">登陆</button></div>
+					</div>
+					<div class="col-md-4">
+						
+					</div>
+				</div>
+				<br>
+				<div class="row">
+					<div class="col-md-4"></div>
+					<div class="col-md-4" id="msg"></div>
+					<div class="col-md-4"></div>
+				</div>
+				<div class="row">
+					<div class="row">
+						<div class="col-md-4"class="col-md-4"></div>
+						<div class="col-md-4">
+							<input type="text" name="text" id="text" class="form-control" placeholder="Text input" />	
+						</div>
+						<div class="col-md-4"></div>
+					</div>
+					<br>
+					<div class="row text-center">
+						<button class="btn btn-lg" id="sendData">发送</button>	
+					</div>
+					
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-4"></div>
+					<div class="col-md-4">
+						<!-- <div class="col-md-2"><button class="btn btn-info" onclick="status(1)">退出</button></div>
+						<div class="col-md-2"><button class="btn btn-info" onclick="status(2)">登陆</button></div>
+					 --></div>
+				<div class="col-md-4"></div>
+			</div>
+			<div class="row">
+				
+
+			</div>
+		</div>	
+			<script type="text/javascript">
+
+			var socket = null; 
+
+
+			function conServer() {
+
+				socket = new WebSocket('ws://localhost:8080/WebSocketServer');
+
+				// 打开Socket 
+				socket.onopen = function(event) {
+				  // 发送一个初始化消息
+				  sendMsg('{"type":"status","content":"login"}');
+				  // 关闭Socket.... 
+				  //socket.close() 
+				};
+				// 监听消息
+				  socket.onmessage = function(event) {
+				    console.log('Client received a message',event); 
+				   	dealMessage(event);
+				  }; 
+
+				  // 监听Socket的关闭
+				  socket.onclose = function(event) {
+				    console.log('Client notified socket has closed',event); 
+				    // socket = null;
+				    socket = null;
+				    document.getElementById("status").innerText = '离线';
+				  };
+			}
+
+				  function dealMessage(event) {
+				  	 var data = $.parseJSON(event.data);
+				  	 var type = data.type;
+				  	 var content = data.content;
+				  	 if(type == 'status') {
+				  	 	document.getElementById("status").innerText = content;
+				  	 }else if(type == 'msg') {
+				  	 	$("#msg").append('<p>' + content + '</p>');
+				  	 }
+				  }
+
+				  function status(state) {
+				  	if(state == 1) {
+				  		// sendMsg('{"type":"status","content":"loginout"}');
+				  		document.getElementById("status").innerText = '离线';
+				  		socket.close();
+				  		socket = null;
+				  	}else if(state == 2) {
+				  		if(socket == null) {
+				  			conServer();
+				  		}
+						
+				  	}else{}
+				  }
+
+				  function sendMsg(msg) {
+				  	if(socket !=null) {
+				  		socket.send(msg);
+				  	}else {
+				  		alert('未登陆');
+				  	}
+				  }
+				  $("#sendData").click(function(){
+				  		var msg = $("#text").val();
+				  		sendMsg('{"type":"msg","content":"' + msg + '"}');
+				  });
+				  window.setTimeout(function(){
+				  	conServer();
+				  },3000);
+			</script>
+	</body>
+
+</html>
