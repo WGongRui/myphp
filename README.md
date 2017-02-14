@@ -1,4 +1,4 @@
 # myphp
 The myphp is test project
-this is branch b2.
+this is branch b2 - 2.
 # https://wgongrui.github.io
